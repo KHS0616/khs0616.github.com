@@ -1,6 +1,7 @@
-title: John Smith
-description: My Personal Blog
-author: John Smith
+# Site-Setting
+title: 개발자
+description: Python 위주 다양한 개발을 공부하는 블로그
+author: KHS0616
 logo: /hcz-jekyll-blog/static/img/avatar.png
 github: https://github.com/codeasashu
 about: Freelance developer
