@@ -2,9 +2,9 @@
 	{
 		"name": "Cool project 1",
 		"image": "placeholder.jpg",
-		"url": "#",
+		"url": "www.naver.com",
 		"date": "Jan 2014",
-		"tags": ["Angular JS","API"]
+		"tags": ["Angular JS","테스트"]
 	},
 	{
 		"name": "Cool project 2",
