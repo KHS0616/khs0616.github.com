@@ -1,6 +1,6 @@
 ---
-layout: page
-title: About
+layout: post
+title: dsad
 permalink: /category/Others
 ---
 
