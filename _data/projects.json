@@ -1,6 +1,6 @@
 [
 	{
-		"name": "Cool project 1",
+		"name": "한글테스트 1",
 		"image": "placeholder.jpg",
 		"url": "www.naver.com",
 		"date": "Jan 2014",
@@ -25,6 +25,13 @@
 		"image": "placeholder.jpg",
 		"date": "Oct 2016",
 		"tags": ["Android","nodejs"]
-	}
+	},
+		{
+		"name": "프로젝트 추가한글테스트 1",
+		"image": "placeholder.jpg",
+		"url": "www.naver.com",
+		"date": "Jan 2014",
+		"tags": ["Angular JS","테스트"]
+	},
 
 ]
