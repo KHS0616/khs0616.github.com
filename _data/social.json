@@ -1,18 +1,18 @@
 [
   {
     "icon": "fa-facebook",
-    "link": "https://www.naver.com"
+    "link": "#"
   },
   {
     "icon": "fa-twitter",
-    "link": "../"
+    "link": "#"
   },
   {
     "icon": "fa-linkedin",
-    "link": "dasds"
+    "link": "#"
   },
   {
     "icon": "fa-stack-exchange",
-    "link": ".."
+    "link": "#"
   }
 ]
