@@ -1,7 +1,7 @@
 ---
 layout: post
-title: about
-permalink: /category/Others
+title: About
+permalink: /about/
 ---
 본 블로그는 개발자가 공부를 하면서 내용을 정리하는 개인 블로그 입니다
 
