@@ -17,12 +17,12 @@
   },
   {
     "text": "Category",
-    "url": "/category/dddd",
+    "url": "/category/notice",
     "icon": "fa-graduation-cap",
   },
   {
     "text": "Github",
-    "url": "../KHS0616",
+    "url": "https://github.com/KHS0616",
     "icon": "fa-github"
   },
   {
