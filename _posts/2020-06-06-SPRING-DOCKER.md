@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 스프링부트로 도커 이미지 만들기
-categories: IT-info, home
+categories: IT-info
 ---
 ```
 2020년 스프링부트가 2.3버전이 릴리즈되면서 도커이미지 제작기능이 추가되었습니다.
