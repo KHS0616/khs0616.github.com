@@ -5,7 +5,7 @@ categories: IT-info
 ---
 
 - 머신러닝을 이용한 보안문자 0.05초에 풀기  
-https://medium.com/towards-artificial-intelligence/breaking-captcha-using-machine-learning-in-0-05-seconds-9feefb997694
+<https://medium.com/towards-artificial-intelligence/breaking-captcha-using-machine-learning-in-0-05-seconds-9feefb997694>
 
 ![image][main_image]
 
