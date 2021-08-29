@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap:https://khs0616.github.io/sitemap.xml
