@@ -1,18 +1,31 @@
-# hidden files
-.*
-!.git*
-!.editorconfig
-!.nojekyll
-!.travis.yml
-
-# bundler cache
+# jekyll
+.jekyll-metadata
 _site
-vendor
+.sass-cache
+.jekyll-cache
+
+
+# bundler
+*.gem
 Gemfile.lock
 
-# rubygem
-*.gem
 
-# npm dependencies
+# python
+*.whl
+
+
+# npm
 node_modules
 package-lock.json
+
+
+# _sass
+_sass/@primer/css/**/*.md
+
+
+# lighthouse
+*.report.html
+
+
+# action
+action.changelog.md
