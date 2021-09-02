@@ -33,14 +33,22 @@ Generate 과정에서 생성된 이미지의 탐지는 매우 중요한 작업�
 ## 3. StyleGAN2 Network  
 ### 1. PPL, 정규화  
 latent space의 지각적 매끄러움을 나타내는 PPL과 이미지 품질 사이에 상관관계가 있을 수 있다는 것을 알아냈기 때문에 regularization term으로 통합했다. 수식은 아래와 같다.  
+![StyleGAN2-PPLmath](../../static/StyleGAN2-PPLmath.png)  
 a는 상수 값이고 y는 정규 분포로부터 생성된 랜덤 값이다.  
 이 정규화는 생성는 생성자가 가능한 latent variable의 미세 변동으로 인한 변화를 최소화 하도록 한다. 학습은 첫 번째 항의 평균을 움직여 상수a를 동적으로 바꾸면서 최적 값을 설정한다.  
 추가로 PLR을 포함한 여러가지 정규화 진행시 계산적으로 overhead가 발생할 수 있으므로 미니배치 16번에 한 번씩 정규화를 진행한다.
+![StyleGAN2-PPLResult](../../static/StyleGAN2-PPLResult.png)  
+결과를 측정하였을 때 기존 StyleGAN보다 PPL이 낮은 수치로 기록되어 더 좋은 성능을 보인다.  
 
 ### 2. Generator  
 ![StyleGAN2-Generator](../../static/StyleGAN2-Generate001.png)  
-기존 StyleGAN Generator 구조에서 AdaIN을 완전히 분해하면 정규화와 변조라는 두 구성요소로 이루어진 것을 확인할 수 있다. 이러한 과정에서 Style Block을 다시 그릴 수 있다. StyleGAN에서는 bias와 noise를 Style Block내부에서 적용하여 상대적인 영향력을 현재 style 크기에 반비례 하도록 한다.  
-이러한 연산을 정규화된 데이터에 대해 동작하는 스타일 블록 외부로 이동하여 보다 예측 가능한 결과를 얻을 수 있다. 이 작업을 수행한 후에는 평균이 필요없고 오직 표준 편차만으로 정규화와 변조 과정을 진행할 수 있다.  
+기존 StyleGAN Generator 구조에서 AdaIN을 완전히 분해하면 정규화와 변조라는 두 구성요소로 이루어진 것을 확인할 수 있다. 이러한 과정에서 Style Block을 다시 그릴 수 있다. 노이즈 삽입 부분은 스타일 블록에서 할 필요가 없기 때문에 외부로 이동하여 보다 예측 가능한 결과를 얻을 수 있다. 이 작업을 수행한 후에는 평균이 필요없고 오직 표준 편차만으로 정규화와 변조 과정을 진행할 수 있다.  
+스타일 블록의 내부 작업을 단순화시켜 스타일 백터의 의한 첫 번째 linear transformation은 convolution 안에서 처리가 가능하다. 스타일 블럭에서 linear transformation의 스타일 백터 W의 계수 ys가 사용됐다. Convolution 가중치 wijk와 함께 s를 곱한 content 이미지를 처리하는 작업은 content 이미지 가중치 wijk와 s의 곱과 합성곱 연산하는 것과 같다. 아래의 수식은 간단하게 위의 설명을 표현한 것이다. (연산자 모드: d)  
+![StyleGAN2-math001](../../static/StyleGAN2-math001.png)  
+
+아래의 수식은 표준 편차의 역수로 output을 곱한다.  
+![StyleGAN-math002](../../static/StyleGAN2-math002.png)  
+위의 수식으로, 스타일 블록의 작업 순서는 스타일에 의한 linear transformation -> convolution -> output normalization이 하나의 convolutoin process로 표현될 수 있다. 정규화 부분은 출력이 정규 분포라고 가정한 정규화 과정이다. 이 과정으로 물방울 문제를 야기하는 실제 분포를 사용하는 대신 이 같은 정규 분포를 사용해서 방지한다.  
 이러한 과정을 통해 입력에 대한 편향, Noise 및 정규화가 적용되는 부분을 성능저하 없이 제거할 수 있다.  
 
 ### 3. Alternative Network Architecture
