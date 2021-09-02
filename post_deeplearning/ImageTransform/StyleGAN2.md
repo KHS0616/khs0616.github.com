@@ -18,12 +18,13 @@ StyleGAN은 기존 Generator과는 많이 다른 구조다. input latent code z�
 ![StyleGAN2-Artifacts](../../static/StyleGAN2-Artifacts.png)  
 이러한 우수한 성능을 보이는 StyleGAN도 단점은 존재한다.  
 각 Layer를 통과하며 Style, Normalization을 수행하는 과정에서 중간 Feature Map에 물방울 형태의 Artifacts가 발생하는 경우가 있다. 이러한 이상 징후는 약 64x64 해상도에서 나타나기 시작하여 모든 Feature Map에 나타나 고해상도에서는 점차 강해지게 된다.  
-이러한 원인은 AdaIN에서 발생한다. AdaIN은 각 Feature Map의 평균과 분산을 별도로 정규화하는 작업에서 Feature의 크게에서 발견된 정보가 파괴될 가능성이 있다.  
+이러한 원인은 AdaIN에서 발생한다. AdaIN은 각 Feature Map의 평균과 분산을 별도로 정규화하는 작업에서 Feature 에서 발견된 정보가 파괴될 가능성이 있다.  
 이러한 이유로 StyleGAN2에서는 정규화 단계를 제거하려고 한다.  
+convolution의 가중치를 estimated statistics(추정 통계)을 사용해 정규화 함으로써 물방울 현상을 방지
 
 ### 3. Progressive Growing  
 ![StyleGAN2-FailteethImage](../../static/StyleGAN2-Failteeth.png)  
-기존 StyleGAN에서 사용하는 점진적인 학습 방법은 고해상도 합성 이미지에 대해 안정화하는데 효과적이었다. 하지만 문제는 특정 위치 정보를 너무 강하게 가지고 있는 것이 문제다. 예를 들어 치아같은 경우는 움직임에 따라 자연스럽게 이동을 해야하는데 이동하지 않고 위치가 고정된 채로 왜곡되는 경우가 있다. 이러한 원인을 StyleGAN의 Progressive Growing 이라고 가정을 한다. 
+기존 StyleGAN에서 사용하는 점진적인 학습 방법은 고해상도 합성 이미지에 대해 안정화하는데 효과적이었다. 하지만 문제는 특정 위치 정보를 너무 강하게 가지고 있는 것이 문제다. 예를 들어 치아같은 경우는 움직임에 따라 자연스럽게 이동을 해야하는데 이동하지 않고 위치가 고정된 채로 왜곡되는 경우가 있다. 이러한 원인을 StyleGAN의 Progressive Growing 이라고 가정을 한다.  
 
 ### 4. Attribution of generated images  
 ![StyleGAN2-FailImage](../../static/StyleGAN2-FailImage.png)  
@@ -31,6 +32,10 @@ Generate 과정에서 생성된 이미지의 탐지는 매우 중요한 작업�
 
 ## 3. StyleGAN2 Network  
 ### 1. PPL, 정규화  
+latent space의 지각적 매끄러움을 나타내는 PPL과 이미지 품질 사이에 상관관계가 있을 수 있다는 것을 알아냈기 때문에 regularization term으로 통합했다. 수식은 아래와 같다.  
+a는 상수 값이고 y는 정규 분포로부터 생성된 랜덤 값이다.  
+이 정규화는 생성는 생성자가 가능한 latent variable의 미세 변동으로 인한 변화를 최소화 하도록 한다. 학습은 첫 번째 항의 평균을 움직여 상수a를 동적으로 바꾸면서 최적 값을 설정한다.  
+추가로 PLR을 포함한 여러가지 정규화 진행시 계산적으로 overhead가 발생할 수 있으므로 미니배치 16번에 한 번씩 정규화를 진행한다.
 
 ### 2. Generator  
 ![StyleGAN2-Generator](../../static/StyleGAN2-Generate001.png)  
