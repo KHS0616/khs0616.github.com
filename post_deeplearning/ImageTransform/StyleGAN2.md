@@ -28,7 +28,7 @@ convolution의 가중치를 estimated statistics(추정 통계)을 사용해 정
 
 ### 4. Attribution of generated images  
 ![StyleGAN2-FailImage](../../static/StyleGAN2-FailImage.png)  
-Generate 과정에서 생성된 이미지의 탐지는 매우 중요한 작업이다. 이를 정확하게 해결하지 못하면 잘못된 형태로 Feature Map에 귀속되어 이미지가 안정적으로 생성되지 못한다. StyleGAN에서는 기술적으로 일치하는 latent code w를 찾는 것이 가능해야 하지만 W에서 이미지로 매핑하는 과정이 매우 복잡하여 안정적으로 성공하기가 어렵다.
+Generate 과정에서 생성된 이미지의 탐지는 매우 중요한 작업이다. 이를 정확하게 해결하지 못하면 잘못된 형태가 특정 소스에 귀속되어 이미지가 안정적으로 생성되지 못한다. Latent Space에서 원하는 형태로 Image를 생성하기 위해서는 Latent Code W를 찾아야 한다. StyleGAN에서는 기술적으로 일치하는 latent code w를 찾는 것이 가능해야 하지만 W에서 이미지로 매핑하는 과정이 매우 복잡하여 안정적으로 성공하기가 어렵다.
 
 ## 3. StyleGAN2 Network  
 ### 1. PPL, 정규화  
@@ -62,6 +62,6 @@ MSG-GAN Generator가 이미지 대신 mipmap을 출력하고 Skip Connection을 
 이상적인 이미지 정보 전달 방식은 Low Resolution에서 다음으로 천천히 정보를 옮겨주는 모습이다. Generator의 구조를 변경한 후 이를 확인하기 위하여 실험을 진행하였다. 결과는 중간 resolution layer 비중이 비 정상적으로 높았다. 이를 해결하기 위해 기존 StyleGAN과 비교하여 최고 Resolution Layer에서 Feature Map 수를 두 배로 늘렸더니 좋은 성능을 보인다.  
 StyleGAN도 Feature Map을 확장시키면 성능이 좋아지지만 StyleGAN2에 비하면 좋지 못한 성능을 보인다.
 
-### 5. Latent Space  
-latent feature space에서 주어진 이미지를 생성하려면 그에 맞는 latent code w를 찾아야 한다. 이전에는 latent code w를 찾는 대신에 각 Generator Layer에 대해 별도의 w를 선택하는 방향으로 개선시켰지만 이러한 방식은 의도치 않은 임의의 이미지를 투영할 수도 있다.  
-이러한 이유로 latent space를 확장하지 않고 latent code w를 찾으려고 한다. 우선 latent code에 하향식 Noise를 추가한다. 이 후 Style의 확률적 Noise 입력도 최적화하여 Generator에 일관된 신호를 전달되지 않도록 한다. 정규화는 Noise Map의 자기 상관 계수를 적용하는 것을 기반으로 한다.
+### 5. Projection of Image to latent space  
+이미지를 Latent Space에 알맞게 투영하려면(생성하려면) 그에 맞는 latent code w를 찾아야 한다. 이전에는 latent code w를 찾는 대신에 각 Generator Layer에 대해 별도의 w를 선택하는 방향으로 개선시켰지만 이러한 방식은 의도치 않은 임의의 이미지를 투영할 수도 있다.  
+이러한 이유로 latent space를 확장하지 않고 latent code w를 찾으려고 한다. 우선 latent code에 하향식 Noise를 추가한다. 이 후 Style의 확률적 Noise 입력도 최적화하여 Generator에 일관된 신호를 전달되지 않도록 정규화 한다. 정규화는 Noise Map의 자기 상관 계수를 적용하는 것을 기반으로 한다.
