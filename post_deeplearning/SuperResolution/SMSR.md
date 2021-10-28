@@ -44,8 +44,11 @@ Sparsity Regularization Loss는 위 수식과 같이 표현된다.
 모든 기울기의 역전파를 진행하기 위해서 Sparse Convolution을 명확하게 수행하지 않았다. 대신 두 마스크와 함께 기존 Dense연산 결과를 곱하여 연산을 수행한다. 위 그림과 같이 channels with Dense, Sparse feature maps 두개로 Feature을 나누고 계산한다. 그 후 서로 다른 조합으로 곱셈연산을 수행하고 최종적으로는 합쳐져서 하나의 Output Feature Map을 생성한다.  
 
 ### 2. Inference Phase  
+![Generate Saprse](../../static/SMSR/SMSR-generateSparse.png)  
+우선 위 그림과 같이 spatial mask를 통해 sparse feature를 생성한다.  
+
 ![Inference Phase](../../static/SMSR/SMSR-Inference.png)  
-추론을 시작하기에 앞서 우선 사용되는 커널을 4등분 하는데 그 중하나는 기존 Dense Conv연산이다. 나머지 3부분은 Sparse Conv를 통해 중요한 부분만 통과시키는 커널이다. 최종적으로 4가지 Feature들은 합쳐지고 Concatenation연산을 수행하여 하나의 Output Feature Map을 생성한다.  
+그 후 사용되는 커널을 4등분 하는데 그 중하나는 기존 Dense Conv연산이다. 나머지 3부분은 Sparse Conv를 통해 중요한 부분만 통과시키는 커널이다. 최종적으로 4가지 Feature들은 합쳐지고 Concatenation연산을 수행하여 하나의 Output Feature Map을 생성한다.  
 
 ## 5. Training Information  
 데이터 셋은 DIV2K 800장을 사용하여 학습, 100장을 사용하여 평가를 진행했다. 배치사이즈는 16, LR Patch 사이즈는 96으로 진행했다. SMSR의 하이퍼파라미터 수치는 C, L, K 각각 64, 4, 5로 설정한다. Optimizer는 Adam, Learning Rate는 2e-4로 설정하며 Loss는 L1 Loss와 Sparsity Regularization Loss 2개를 사용한다.  
