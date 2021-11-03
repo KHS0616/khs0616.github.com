@@ -52,6 +52,7 @@ Sparsity Regularization Loss는 위 수식과 같이 표현된다.
 
 ## 5. Training Information  
 데이터 셋은 DIV2K 800장을 사용하여 학습, 100장을 사용하여 평가를 진행했다. 배치사이즈는 16, LR Patch 사이즈는 96으로 진행했다. SMSR의 하이퍼파라미터 수치는 C, L, K 각각 64, 4, 5로 설정한다. Optimizer는 Adam, Learning Rate는 2e-4로 설정하며 Loss는 L1 Loss와 Sparsity Regularization Loss 2개를 사용한다.  
+학습 및 추론과정에서 SMM 블록을 5번사용하였고 각 블록의 내부에서 Sparse Mask Convolution 연산을 4번 반복하여 실행한다.
 
 ## 6. Conclusion  
 ![conclusion001](../../static/SMSR/SMSR-conclusion001.png)  
