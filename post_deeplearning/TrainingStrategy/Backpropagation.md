@@ -2,7 +2,7 @@
 sort: 2
 ---
 
-# BackProgation  
+# BackPropagation  
 오차역전파법  
 
 ## 1. 개요
