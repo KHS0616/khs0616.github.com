@@ -13,6 +13,7 @@ LapSRN 네트워크에서 처음으로 사용된 Loss함수이며 기존에 사�
 ## 2. 코드  
 ```python
 import torch
+import torch.nn as nn
 
 class Charbonnier_loss(nn.Module):
     """ Charbonnierloss """
