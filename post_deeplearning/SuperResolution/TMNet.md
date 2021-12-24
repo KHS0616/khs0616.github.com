@@ -32,4 +32,36 @@ TMB를 통해 수정된 PCD 모듈은 총 3번의 Down scale을 거치며 프레
 이 과정을 통해 High frame-rate, Low relosution video를 얻게되었고 다음 과정을 통해 temporal dimension을 따라 Feature maps들을 통합할 것이다.  
 
 ### 3. Temporal Feature Fusion  
-추후 작성 예정
+위 과정을 통해 추출된 프레임은 낮은 퀄리티를 보여준다. 이를 보강하기 위하여 인접한 프레임으로부터 각각 Locally Temporal Feature, Globally Temporal Feature 들을 이용하여 낮은 퀄리티를 보강한다.  
+
+#### 1. Locally-temporal feature comparison  
+![TMNet LFC 구조](../../static/TMNet/TMNet-LFC.png)  
+현재 프레임의 단기 메모리 정보를 보존하는 것은 매우 중요한 일이다. 이를 위해 LFC 모듈을 이용하여 인접한 프레임으로부터 정보를 보완한다.  
+우선 인접한 프레임과 현재 프레임을 Concat 연산을 통해 결합한다. 그 후 Conv 연산을 수행한다. 전, 후 총 2개의 offset을 생성하고 이를 이용하여 학습을 진행한다. DCN을 이용하여 각각의 offset과 전, 후 프레임을 연산을 수행하고 각각의 결과와 현재 프레임을 Concat 연산을 수행한다. 최종적으로 생성된 프레임과 원래 프레임을 Conv 연산을 통해 비교하여 최종 정제된 프레임을 생성한다.  
+
+#### 2. Globally-temporal feature comparison  
+위 과정을 통해 단기적 메모리 정보는 보완이 가능했다. 하지만 LFC는 수용량이 작아서 빠른모션, 큰 이미지는 정보가 부족할 수 있다. 이를 해결하기 위해 LSTM을 도입한 BDConvolutionLSTM network를 사용하여 프레임을 한번 더 보완하고 이 프레임을 GFF프레임으로 명명한다. LFC, GFF를 통하여 TMNet에서 우수한 성능을 보일 수 있었다.  
+
+### 4. High-Resolution Reconstruction  
+여기까지 모든 과정을 거친 프레임은 High Quality 프레임들이다. 하지만 여전히 Low-Resolution 상태이므로 이를 High-Resolution 으로 향상시키려고 한다. 40개의 ResBlocks들을 이용하여 Conv연산을 수행하고 연산을 수행하기 전 프레임들과 결합하여 최종적으로 두개의 Pixel-Shuffle 연산을 수행하여 High-Resolution 프레임을 얻는다.  
+
+## 3. 학습 전략  
+### 1. 학습 방식  
+최적화 함수(Optimizer)는 Adam 함수를 사용하여 learning rate는 1e-4부터 시작해서 150,000 iteration마다 감소하여 최종적으로 1e-7까지 감소한다. beta1, beta2 값은 각각 0.9, 0.999로 설정한다.  
+손실 함수(Loss Function)는 Charbonnier loss function을 사용한다.  
+학습할 때 배치사이즈는 24로 설정하고 최종적으로 600,000 iteration 만큼 학습을 진행한다. 32size로 패치를 자르고 random horizontal-flip, random rotation연산을 수행하여 이미지 augmentation을 진행한다.  
+
+### 2. 학습 순서  
+TMNet을 그대로 학습을 하게되면 TMB블록으로 인해 정확도가 낮아지게 된다. 이류는 TMB가 특정 순간을 인지하지 못해 정확한 추정이 불가능하기 때문이다. 이를 방지하기 위해 2단계로 학습을 진행한다.  
+우선 하이퍼파라미터 t 값을 0.5로 설정하여 TMB블록이 작동하지 않도록 설정한 상태로 학습을 진행한다. Loss를 측정할 때는 1,3,5,7 번째 이미지들끼리 계산한다.  
+두 번째 단계에서는 메인 네트워크의 모든 weight값을 고정시키고 TMB블록만 학습시킨다. 이 과정에서 1, 7번째 프레임을 통해 중간 프레임을 생성하고 총 5개의 프레임을 이용하여 Loss를 측정한다.  
+
+### 3. 데이터셋  
+데이터 셋은 Vimeo-90K 데이터 셋을 사용하였고 각각의 이미지는 Bicubic보간법을 이용하여 4배 DownSample을 진행하여 학습을 진행한다.  
+
+### 4. 평가지표  
+평가지표로 PSNR, SSIM을 사용한다.  
+
+## 4. 결과  
+![TMNet 결과](../../static/TMNet/TMNet-Results.png)  
+위 그림과 같이 다른 네트워크와 비교하여 TMNet이 우수한 성능을 보인다.
