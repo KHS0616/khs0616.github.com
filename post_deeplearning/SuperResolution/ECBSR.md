@@ -38,3 +38,27 @@ Edge Device에 적합한 네트워크를 개발하기 위하여 그 기반이 �
 
 ![final](../../static/ECBSR/ECBSR_final.png)  
 위 4가지 구성요소를 통해 최종적으로는 하나의 Feature Information을 얻는다.  
+
+### 3. Re-Parameterization for efficient inference  
+앞서 언급된 기술은 Training 과정에서 더 많은 Feature Information을 추출하기 위해 사용된 방식이다. 해당 기술을 Inference 과정에서 그대로 사용하게 되면 속도가 많이 저하되기 때문에 구조를 바꿀 필요가 있다.  
+
+![convInfer](../../static/ECBSR/ECBSR_convInfer.png)  
+
+우선 Expanding-and-Squeezing Convolution 연산부분을 위 식처럼 Normal Convolution 연산으로 바꿀 수 있다. 위 식의 perm은 Tensor의 첫 번째와 두 번째 차원을 교환하는 연산이다.  
+
+다음으로 Sobel Filter를 사용한 Sequential Convolution 연산과 Laplacian Filter를 사용한 연산에서 사용된 Depth-wise Convolution 연산은 Sparse한  Normal Convolution 연산으로 간주할 수 있다. 아래는 관련 수식이다.  
+
+![DWconv1](../../static/ECBSR/ECBSR_DWconv001.png)  
+![DWconv2](../../static/ECBSR/ECBSR_DWconv002.png)  
+
+최종적으로 Inference 단계에서 Feature Map은 아래 수식처럼 표현할 수 있다.  
+
+![FinalConv](../../static/ECBSR/ECBSR_Finalconv.png)  
+
+## 3. Training Strategy  
+### 1. Strategy  
+Random Crop을 통해 HR 64x64, LR 32x32 크기로 patch를 조절한다. 
+L1 Loss Function을 사용하며 ADAM Optimizer로 학습한다. 이 때, learning rate는 0.0005로 설정한다.  
+
+### 2. Results  
+![results](../../static/ECBSR/ECBSR_results.png)  
