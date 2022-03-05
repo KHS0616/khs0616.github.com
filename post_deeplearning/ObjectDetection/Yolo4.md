@@ -6,10 +6,12 @@ sort: 5
 YOLOv4: Optimal Speed and Accuracy of Object Detection  
 
 ## 1. Introduction  
+![main](../../static/Yolo4/Yolo4_main.png)  
 최신 Neural Networks들은 높은 정확도를 가지지만, 낮은 FPS, 큰 mini batch size로 인해 학습하는데 많은 GPU가 필요한 단점이 있다. Yolo v4는 1개의 GPU를 사용하는 일반적인 학습환경에서 학습이 가능하다. 또한 BOF, BOS 기법 등 다양한 최신 기법을 사용한 효율적이고 강력한 Object Detection 모델이다.  
 
 ## 2. Related Work  
 ### 1. Object Detection  
+![relate](../../static/Yolo4/Yolo4_relate.png)  
 최신 detector는 주로 백본(Backbone)과 헤드(Head)라는 두 부분으로 구성된다. 백본은 입력 이미지를 feature map으로 변형시켜주는 부분이다. ImageNet 데이터셋으로 pre-trained 시킨 VGG16, ResNet-50 등이 대표적인 Backbone이다. 헤드는 Backbone에서 추출한 feature map의 location 작업을 수행하는 부분이다. 헤드에서 predict classes와 bounding boxes 작업이 수행된다.  
 
 헤드는 크게 Dense Prediction, Sparse Prediction으로 나뉘는데, 이는 Object Detection의 종류인 1-stage인지 2-stage인지와 직결된다. Sparse Prediction 헤드를 사용하는 Two-Stage Detector는 대표적으로 Faster R-CNN, R-FCN 등이 있다. Predict Classes와 Bounding Box Regression 부분이 분리되어 있는 것이 특징이다.  
@@ -57,15 +59,19 @@ CNN에서 사용하는 주된 기법은 아래와 같다.
 Activation Function에 대해서는 PRLU와 SELU가 학습하기 더 어렵고, ReLU6는 Quantize Network를 위해 특별히 설계되었으므로 후보 목록에서 제외한다. Regularization 방법으로는 DropBlock을 선택한다. normalization 방법의 선택에 대해서는 GPU 하나만 사용하는 학습 전략에 중점을 두기 때문에 SyncBN은 고려되지 않는다.  
 
 ### 3. Additional improvements  
+![cmbn](../../static/Yolo4/Yolo4_cmbn.png)  
 하나의 GPU에서 적합한 학습을 위해 아래와 같은 내용을 추가했다.  
 - 새로운 Data augmentation 방식인 Mosaic, 그리고 Self-Adversarial Training(SAT)를 추가하였다.  
 - Genetic 알고리즘을 적용하는 동안 optimal hyper-parameters를 선택한다.  
 - 기존 모델을 본 논문의 목적에 맞게 수정하여 사용한다.(modified SAM, modified PAN, Cross mini-batch normalization CmBN)  
 
+![mosaic](../../static/Yolo4/Yolo4_mosaic.png)  
 Mosaic은 4개의 학습 이미지를 혼합하는 새로운 Data augmentation 방법이다. 따라서 CutMix는 2개의 입력 영상만 혼합하는 반면, Mosaic은 4개의 다른 컨텍스트가 혼합된다. 이는 정상적인 context를 벗어난 물체의 detection을 낮춘다. 또한 batch normalization은 각 레이어에 있는 4개의 서로 다른 이미지에서 activation statistics를 계산한다. 따라서 큰 mini batch size가 필요하지 않다.  
 
 Self-Adversarial Training(SAT)은 또한 2개의 순전파, 역전파 단계에서 작동하는 새로운 Data augmentation 기술을 나타낸다. 1단계에서 Network는 network weights 대신 원본 이미지를 변경한다. 이러한 방식으로 network는 이미지에 원하는 물체가 없다는 속임수를 만들기 위해 원래 이미지를 변경함으로써 자신에 대한 적대적 공격을 실행한다. 두 번째 단계에서 network는 이 수정된 이미지의 물체를 정상적인 방법으로 감지하도록 학습된다.  
 
+![mSAM](../../static/Yolo4/Yolo4_mSAM.png)  
+![mPAN](../../static/Yolo4/Yolo4_mPAN.png)  
 본 논문에서는 SAM을 기존의 spatial-wise attention 방식에서 point-wise attention 방식으로 변경한다. PAN에서는 shortcut connection 구조를 concatenation 구조로 변경한다.  
 
 ### 4. Yolo v4  
@@ -106,10 +112,40 @@ YOLOv3-SPP를 사용한 Genetic 알고리즘 실험에서는 위와는 다른 hy
 - loss normalizer 0.07  
 
 ### 2. Influence of different features on Classifier training  
+![different data augment](../../static/Yolo4/Yolo4_diffDA.png)  
 Class label smoothing 영향, 서로 다른 Data augmentation의 영향, MixUp, CutMix 및 Mosaic, Leaky-ReLU, Swish, Miss와 같은 다양한 Activation의 영향을 연구한다.  
-표 2에 설명된 것처럼 본 실험에서, CutMix 및 Mosaic Data augmentation, Class label smoothing, Mish Activation 같은 기능을 도입함으로써 Classifier의 정확도가 향상된다. 따라서 Classifier 학습을 위한 BOF Backbone(Bag of Freebies)는 CutMix 및 Mosaic Data augmentation 및 Class label smoothing. 또한 표 2와 표 3에 표시된 바와 같이 보완적인 옵션으로 Mish Activation을 사용합니다.  
+
+![chart](../../static/Yolo4/Yolo4_chart1.png)  
+![chart](../../static/Yolo4/Yolo4_chart2.png)  
+본 실험에서, CutMix 및 Mosaic Data augmentation, Class label smoothing, Mish Activation 같은 기능을 도입함으로써 Classifier의 정확도가 향상된다. 따라서 Classifier 학습을 위한 BOF Backbone(Bag of Freebies)는 CutMix 및 Mosaic Data augmentation 및 Class label smoothing. 또한 보완적인 옵션으로 Mish Activation을 사용한다.  
 
 ### 3. Influence of different features on Detector training  
-본 연구는 표 4와 같이 Detector Training accuracy에 대한 다양한 BoF Detector(Bag-of-Freebies)의 영향에 관한 것이다. FPS에 영향을 주지 않고 Detector accuracy를 높이는 다양한 특징을 연구하여 BoF 목록을 크게 확장한다.  
+![chart](../../static/Yolo4/Yolo4_chart3.png)  
+본 연구는 Detector Training accuracy에 대한 다양한 BoF Detector(Bag-of-Freebies)의 영향에 관한 것이다. FPS에 영향을 주지 않고 Detector accuracy를 높이는 다양한 특징을 연구하여 BoF 목록을 크게 확장한다.  
 - S: 격자 감도를 제거한다. 방정식 bx = ((ty)+cy,by =ty(ty)+cy,where (cx 및 cy 변수는 전체 갯수를 의미한다)는 객체 좌표를 평가하기 위해 YOLOv3에서 사용된다. 위 식에 따르면 cx 또는 cx + 1 값에 접근하는 bx 값에 매우 높은 tx 절대값이 필요하다. 이 문제를 해결하기 위해 Sigmoid에 1.0을 초과하는 계수를 곱하여 물체를 감지할 수 없는 격자의 영향을 제거한다.  
 - M: Moasic Data Augmentation - 학습 중 단일 이미지 대신 4개의 이미지 mosaic을 사용한다.  
+- IT: multiple anchors를 하나의 ground truth를 위해 IoU threshold 사용  
+- GA: 최초 10% 학습 과정에서 Genetic 알고리즘을 이용하여 학습  
+- LS: 오답과 동일한 거리만큼 멀리있게 하기위한 label smoothing을 위해 sigmoid 사용  
+- CBN: CmBN, 단일 미니 배치 내에서 통계를 수집하는 대신 전체 배치 내에서 통계를 수집하기 위해 Cross-mini batch normalization 사용  
+- CA: Cosine annealing scheduler, sinusoid training 과정에서 learning rate 변경  
+- DM: Dynamic mini-batch size, 학습 과정에서 random shape를 통해 mini batch size 자동 증가  
+- OA: 512*515 network 학습을 위해 OptimizedAnchors사용  
+- GIoU, CIoU, DIoU, MSE: Bounding Box regression에 서로다른 Loss 함수 사용  
+
+![chart](../../static/Yolo4/Yolo4_chart4.png)  
+추가 연구는 PAN, RFB, SAM, Gaussian YOLO(G) 및 ASFF를 포함한 Detector 학습 accuracy에 대한 BoS Detector의 영향에 관한 것이다. 본 실험에서 검출기는 SPP, PAN 및 SAM을 사용할 때 최고의 성능을 발휘한다.  
+
+### 4. Influence of different backbones and pre- trained weightings on Detector training  
+![chart](../../static/Yolo4/Yolo4_chart5.png)  
+Detector accuracy에 대한 다양한 Backbone network의 영향을 연구한다. 최고의 classification accuracy로 특징지어지는 모델이 detector accuracy 측면에서 항상 최상은 아니라는 것을 알 수 있다.
+
+1. 서로 다른 features로 학습된 CSPResNeXt50 모델의 classification accuracy는 CSPDarknet53 모델에 비해 높지만, CSPDarknet53 모델은 object detection 측면에서 더 높은 accuracy를 보인다.  
+
+2. CSPResNeXt50 classifier 교육에 BoF와 Mish를 사용하면 classification accuracy가 높아지지만, detector 학습에 pretrained된 weight를 추가로 적용하면 detector accuracy가 감소한다. 그러나 CSPDarknet53 detector 학습에 BoF와 Mish를 사용하면 classifier와 pretrained weight를 사용하는 detector의 accuracy가 모두 증가한다. 결과적으로 Backbone CSPDarknet53이 CSPResNeXt50보다 detector에 더 적합합니다.  
+
+CSPDarknet53 모델이 다양한 개선으로 인해 detector accuracy를 높일 수 있는 더 큰 능력을 보여준다는 것을 알 수 있다.  
+
+### 5. Influence of different mini-batch size on Detector training  
+![chart](../../static/Yolo4/Yolo4_chart6.png)  
+다양한 mini batch size로 학습된 모델을 사용하여 얻은 결과를 분석한다. 표에 표시된 결과에서, BoF 및 BoS을 추가한 후 mini batch size가 detector의 성능에 거의 영향을 미치지 않는다는 것을 발견했다. 이러한 결과는 BoF와 BoS 도입 이후 더 이상 학습에 값비싼 GPU를 사용할 필요가 없음을 보여준다. 즉, 누구나 뛰어난 detector를 학습시키기 위해 기존의 GPU만을 사용할 수 있다.
