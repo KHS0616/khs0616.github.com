@@ -30,7 +30,7 @@ decoder 또한 encoder에 있는 두 layer를 모두 가지고 있다. 다른 �
 각 위치에 있는 단어가 개별적인 path를 통해 encoder에서 흘러간다. self-attention layer에서 이 위치에 따른 path들 사이에 다 dependency가 있는데, feed-forward layer에서는 없기 때문에 feed-forward layer 내의 다양한 path들은 병렬 처리될 수 있다.  
 
 ![Encoder Main](../../static/Transformer/Transformer_encoder_main.png)  
-encodersms 입력으로 리스트를 받는다. 이 리스트를 먼저 self-attention layer에, 그 다음으로 feed-forward 신경망에 통과시키고 그 결과물을 그 다음 encoder에게 전달한다. 각 위치의 단어들은 각각 다른 self-encoding 과정을 거친다. 그 다음으로 모두에게 같은 과정인 feed-forward 신경망을 거친다.  
+encoder는 입력으로 리스트를 받는다. 이 리스트를 먼저 self-attention layer에, 그 다음으로 feed-forward 신경망에 통과시키고 그 결과물을 그 다음 encoder에게 전달한다. 각 위치의 단어들은 각각 다른 self-encoding 과정을 거친다. 그 다음으로 모두에게 같은 과정인 feed-forward 신경망을 거친다.  
 
 ## 4. Self-Attention  
 ### 1. 개요  
