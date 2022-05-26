@@ -43,3 +43,27 @@ Y는 ground-truth 이미지를 표현하고, Lchar는 Charbonnier Loss를 의미
 ![수식003](../../static/MPRNet/MPRNet_math003.png)  
 
 ∆는 Laplacian 함수를 의미한다. 파라미터 λ는 두 loss 사이의 간격의 연관된 중요성을 조절하고 0.05로 설정한다.  
+
+### 3.2 Complementary Feature Processing  
+대부분의 이미지 복원을 위한 single-stage CNN 모델은 아래 구조들로 설계된다.  
+
+- Encoder-decoder  
+- Single-scale feature pipeline  
+
+Encoder-decoder 네트워크는 처음으로 입력 값을 low-resolution으로 점진적으로 매핑시키고, 반대 과정도 점진적으로 원본 이미지와 매핑시킨다. 이러한 과정을 진행하면서 down sampling의 반복으로 인하여 spatial detail 정보가 손실된다. 대조적으로 single-scale feature pipeline 방식은 올바른 spatial details 들을 가지는 이미지를 생성하는 것과 관련이 있다. 하지만 출력 결과들은 제한적인 receptive field 때문에 의미론적으로 덜 견고하다. 즉, spatially accurate, contextually outputs들 중 하나를 선택해야 하는 제한사항이 발생한다. 두 설계 방식의 장점을 가져오기 위하여 인접 네트워크는 encoder-decoder network, 마지막 단계는 original input 해상도에서 작동하는 방식인 multi-stage framework 을 제안한다.  
+
+![네트워크](../../static/MPRNet/MPRNet_network.png)  
+
+위 그림a 가 encoder-decoder U-Net 기반으로 설계된 네트워크다. 처음으로 각각의 scale의 특징을 추출하기 위하여 channel attention blocks을 추가한다. 두 번째로, U-Net의 feature maps의 Skip connections들을 사용한다. 마지막으로 Transposed convolution 대신에 convolution layer 후에 bilinear upsampling을 사용한다. 이것은 Transpose convolution 과정에서 이미지에서 종종 발견되는 checkerboader artifacts를 제거하는데 도움이된다.  
+
+그림의 b와 같이 입력 이미지에서 출력 이미지 까지 올바른 세부사항들을 보존하기 위하여, 마지막 단계에 original-resolution subnetwork (ORSNet)을 사용한다. OSRNet은 downsampling operation을 사용하지 않고 spatially-enriched high-resolution features들을 생성한다. 이 것은 다수의 original resolution blocks (ORBs)로 구성되고, 각각은 CABs를 포함한다.  
+
+### 3.3 Cross-stage Feature Fusion  
+본 논문에서는 두 encoder-decoders 사이, encoder-decoder와 OSRNet 사이에 CSFF를 사용한다. 하나의 단계의 특징들은 다음 단계로 전파되기 전에, 1x1 convolution에 의해 재정의된다. 제안하는 CSFF는 몇몇 장점을 가지고 있다. 첫 번째로 encoder-decoder 구조에서 반복적인 up-down 연산을 사용하기 때문에, 정보 손실로 인한 네트워크의 취약점을 줄여준다. 두 번째는 하나의 단계의 다수의 scale features는 다음 단계의 정보를 풍부하게 하는데 도움을 준다. 세번째는 네트워크 최적화 절차는 전체 네트워크에 몇몇 단계를 추가하게 해서 정보의 흐름을 쉽게하는데 더 안정적이게 한다.  
+
+### 3.4 Supervised Attention Module  
+최근 이미지 복원을 위한 multi-stage network는 각각의 단계에서 직접적으로 예측을 하고, 그 후에 다음 연속적인 단계로 통과시킨다. 본 논문에서는 기존 방법 대신에, 모든 두 개의 단계 사이에 supervised attention module을 사용하고, 이것은 상당한 성능을 얻는데 용이하게 할 것이다. SAM의 개략도는 그림 4, 이 것은 두가지 관점에서 도움이 된다. 첫번째로 각각의 단계에서 점진적인 이미지 복원에 도움이 되는 ground-truth supervisory를 제공한다. 두 번째는 현재 단계에서 다음 단계로의 전파를 위해 정보 손실을 줄이고 유용한 것만 허용하기 위해 locally supervised predictions과 함께 attention maps를 생성한다.  
+
+![SAM](../../static/MPRNet/MPRNet_SAM.png)  
+
+위 그림과 같이 SAM은 초기 단계의 features를 사용하고, 처음으로 생성된 residual 이미지를 1x1 convolution과 함께 사용한다. Reisdual 복원 이미지를 얻기 위한 이미지는 열화가 추가된 입력 이미지다. 결과를 예측하기 위해서 원본 이미지의 explicit supervision을 제공한다. 다음으로, per pixel attentiion masks들은 이미지 Xs로 부터 1x1 convolution 연산과 뒤 이어오는 sigmoid 연산에 의해 생성된다. 이러한 마스크들은 local features의 변형을 재 조정하기 위해 사용되고, 결과로 identity mapping path를 위해 추가된 attention-guided features를 생성한다. 마지막으로 SAM에 의하여 생성된 attention-augmented feature representation Fout은 더 좋은 처리를 위하여 다음 단계로 통과된다.
