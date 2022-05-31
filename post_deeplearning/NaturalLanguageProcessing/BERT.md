@@ -60,3 +60,15 @@ NSP 작업은 representation learning objectives와 밀접하게 관련되어 �
 
 <Pre-training Data>  
 Pre-training 절차는 존재하는 언어 모델의 과정을 대부분 따른다. Pre-training corpus를 위해, BooksCorpus(800M words), 그리고 English Wikipedia (2,500M words)를 사용한다. Wikipedia에서 text 구절만 추출하고, 나머지 목록이나 테이블 그리고 헤더들은 무시한다. Billion Word Benchmark 같은 뒤섞인 sentence-level corpus를 사용하는 것 보다 document-level corpus를 사용하는 것은 긴 인접 묹장을 추출하기 위해 중요하다.  
+
+### 2. Fine-Tuning BERT  
+Transformer의 self-attention mechanism 으로 인하여 BERT가 적절한 입력과 출력을 교체함으로써 Single text 또는 text pairs 같은 많은 downstream 작업들을 설계할 수 있으므로 Fine-tuning 과정은 간단하다. text pairs applications의 경우 한가지 흔한 패턴은 bidirectional cross attention을 적용하기 전에 독립적으로 text pairs들을 encode 하는 것이다. BERT는 self-attention mechanism을 이용하여 이 두 간계를 통합하며, self-attention과 함께 encoding으로 합쳐진 text pair는 두 문장 사이의 bidirectional cross attention을 효과적으로 포함한다.  
+
+각각의 작업에서 BERT의 task-specific 입력과 출력을 간단하게 연결하고, 모든 파라미터를 미세조정 한다. 입력에서, pre-training의 문장 A와 문장 B들은 아래와 유사하다.  
+
+1) sentence pairs in paraphrasing (의역의 두 문장)  
+2) hypothesis-premise pairs in entailment (가설과 전제)  
+3) question-passage pairs in question answering (질문과 답변)  
+4) a degenerate text-∅ pair in text classification or sequence tagging.  
+
+출력에서, token representations들은 sequence tagging 또는 question answering 같은 token-level tasks들을 위해 출력 layer에 들어간다, 그리고 [CLS] representation은 entailment 또는 sentiment analysis 같은 classification을 위해 출력 layer에 사용된다. Pre-training 과정과 비교하면, fine-tuning은 비교적 간단하다. 논문의 모든 결과는 single Cloud TPU 환경에서 최대 1시간, GPU 환경 에서 수시간 동안 복제가 가능하다.
