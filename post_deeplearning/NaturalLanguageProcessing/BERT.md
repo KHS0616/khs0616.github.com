@@ -58,7 +58,7 @@ Question Answering (QA)와 같은 downstream 작업들과 Natural Language infer
 
 NSP 작업은 representation learning objectives와 밀접하게 관련되어 있다. 그러나, 이전 작업에서, 오직 sentence embeddings들만이 downstream 작업으로 전송되며, 여기서 BERTsms end-task 모델 파라미터를 초기화 하기위해 모든 파라미터를 전송한다.  
 
-<Pre-training Data>  
+Pre-training Data  
 Pre-training 절차는 존재하는 언어 모델의 과정을 대부분 따른다. Pre-training corpus를 위해, BooksCorpus(800M words), 그리고 English Wikipedia (2,500M words)를 사용한다. Wikipedia에서 text 구절만 추출하고, 나머지 목록이나 테이블 그리고 헤더들은 무시한다. Billion Word Benchmark 같은 뒤섞인 sentence-level corpus를 사용하는 것 보다 document-level corpus를 사용하는 것은 긴 인접 묹장을 추출하기 위해 중요하다.  
 
 ### 2. Fine-Tuning BERT  
