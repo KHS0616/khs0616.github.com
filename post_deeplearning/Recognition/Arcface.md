@@ -103,3 +103,37 @@ FaceScrub은 530명의 고유한 개인 100k 사진을 포함하는 공�
 모든 면의 아이덴티티 센터까지의 코사인 거리에 따라 순위를 매긴다. 사실, 얼굴 이미지 221과 136은 아론 에크하트가 아니다. 
 FaceScrub 데이터 세트를 수동으로 정리하고 마침내 605개의 노이즈가 있는 얼굴 이미지를 찾는다. 
 테스트 중에 노이즈가 있는 얼굴을 다른 오른쪽 얼굴로 변경하여 식별 정확도를 약 1% 높일 수 있다.  
+
+### 2. Network Settings  
+먼저 VGG2를 Training Data로, softmax를 loss function으로 사용하여 서로 다른 네트워크 설정을 기반으로 face verification 성능을 평가한다. 본 논문의 모든 실험은 MxNet에 의해 구현된다.  배치 크기를 512로 설정하고 4개 또는 8개의 NVIDIA Tesla P40(24GB) GPU에서 모델을 학습한다. learning rate는 0.1에서 시작하여 100k, 140k, 160k 반복에서 10으로 나눈다. 총 iteration step은 200k로 설정된다. 
+momentum을 0.9로 설정하고 weight decay를 5e - 4로 설정했다.  
+
+#### 1. Input setting
+다음으로, 얼굴 이미지를 normalize하기 위해 similarity transform을 위한 5개의 얼굴 랜드마크(눈 가운데, 코끝 및 입 가름)를 사용한다. 얼굴 이미지는 crope되고, 112 × 112로 크기가 조절되며, RGB 이미지는 127.5를 뺀 다음 128로 나누어 정규화된다.  
+
+대부분의 컨볼루션 네트워크는 Image-Net 분류 작업을 위해 설계되었기 때문에 입력 이미지 크기는 일반적으로 224 × 224 이상으로 설정된다. 참고로 face crops 크기는 112 ×112에 불과하다. 더 높은 feature map resolution을 보존하기 위해, conv7 × 7과 stread = 2를 사용하는 대신 첫 번째 컨볼루션 레이어에서 conv3 × 3과 stread = 1을 사용한다. 이 두 설정에서, 컨볼루션 네트워크의 출력 크기는 각각 7 × 7과 3 × 3이다.  
+
+#### 2. Output setting  
+마지막으로 여러 계층에서 임베딩 설정이 모델 성능에 어떤 영향을 미치는지 확인하기 위해 몇 가지 다른 옵션을 조사할 수 있다. 옵션 A의 임베딩 크기는 마지막 컨볼루션 레이어의 채널 크기에 따라 결정되므로 모든 feature embedding 채널 수는 옵션 A에 대해 512로 설정된다.  
+
+- Option-A: Use global pooling layer(GP).
+- Option-B: Use one fully connected (FC) layer after GP.
+- Option-C: Use FC-Batch Normalisation (BN) after GP.
+- Option-D: Use FC-BN-Parametric Rectified Linear Unit (PReLu) after GP.
+- Option-E: Use BN-Dropout -FC-BN after the last convolutional layer.
+
+#### 3. Block Setting  
+원래 ResNet unit 외에도 얼굴 인식 모델의 훈련을 위한 보다 발전된 residual 유닛 설정도 조사한다.  
+
+#### 4. Backbones  
+모델 구조 설계에 대한 최근의 발전을 기반으로, 심층 얼굴 인식을 위해 MobileNet, InceptionResnet-V2, Densely connected convolutional networks(DenseNet), SE(Squeeze and excitation Network), DPN(Dual Path Network)도 탐구한다. 본 논문에서는 정확도, 속도 및 모델 크기 측면에서 이러한 네트워크 간의 차이를 비교한다.  
+
+#### 5. Network Setting Conclusions  
+"L"의 설정을 포함하거나 포함하지 않은 두 개의 네트워크를 비교한다. 첫 번째 컨볼루션 레이어로 conv3 × 3과 stread = 1을 사용할 때, 네트워크 출력은 7 ×7이다. 대조적으로, 만약 첫 번째 컨볼루션 레이어로 conv7 ×7과 stread=2를 사용한다면, 네트워크 출력은 3 × 3에 불과하다. 훈련 중에 더 큰 feature map을 선택하는 것이 더 높은 검증 정확도를 얻는다는 것은 명백하다. 옵션 E(BN-Dropout-FC-BN)는 최상의 성능을 제공한다. 본 논문에서는 드롭아웃 매개변수가 0.4로 설정된다. Dropout over-fitting을 방지하고 심층 얼굴 인식을 위한 더 나은 일반화를 얻기 위해 정규화를 효과적으로 작용할 수 있다. 원래 residual 단위와 개선된 residual 단위를 비교 결과에서 알 수 있듯이 제안된 BN-Conv(strid=1)-BN-PReLu-Conv(strid=2)-BN 유닛은 검증 성능을 분명히 개선할 수 있다. LFW의 성능이 거의 포화 상태이기 때문에, 이러한 네트워크 백본을 비교하기 위해 더 어려운 테스트 세트인 CFP-FP와 AgeDB-30에 초점을 맞춘다. Inception-Resnet V2 네트워크는 긴 실행 시간(53.6ms)과 가장 큰 모델 크기(642MB)로 최고의 성능을 얻는다. 반면 모바일 넷은 112MB 모델로 4.2ms 이내에 face feature embedding을 마칠 수 있고 성능은 소폭 하락할 뿐이다. ResNet-100, Inception-Resnet-V2, DenseNet, DPN 및 SE-Resnet-100과 같은 대규모 네트워크 사이의 성능 차이는 상대적으로 작다. ccuracy, speed and model size 간의 절충을 기반으로, 메가 페이스 과제에 대한 실험을 수행하기 위해 LResNet100 E-IR을 선택한다. Weight decay. SE-LResNet50 E-IR 네트워크를 기반으로 중량 감소(WD) 값이 검증 성능에 어떤 영향을 미치는지도 살펴본다. weight decay 값이 5e - 4로 설정되면 검증 정확도가 가장 높은 지점에 도달한다. 따라서 다른 모든 실험에서 weight decay를 5e - 4로 고정한다.  
+
+### 3. Loss Setting
+margin parameter m은 제안된 ArcFace에서 중요한 역할을 하므로 먼저 최상의 angular margin을 검색하기 위한 실험을 수행한다. 0.2에서 0.8까지 m을 변화시킴으로써 LMobileNetE 네트워크와 ArcFace 손실을 사용하여 정교한 MS1M 데이터 세트에 대한 모델을 교육한다. 성능은 모든 데이터 세트에서 m = 0.2보다 일관되게 향상되고 m = 0.5에서 포화 상태가 된다. 그러면 검증 정확도가 m = 0.5에서 감소한다. 본 논문에서는 가산 각도 여백 m을 0.5로 수정한다. LresNet100 E-IR 네트워크와 정교한 MS1M 데이터 세트를 기반으로 소프트맥스, 스피어 페이스, 코사인 페이스 및 아크 페이스와 같은 다양한 손실 기능의 성능을 비교한다. 표 7에서는 LFW, CFP-FP 및 AgeDB-30 데이터 세트에 대한 자세한 검증 정확도를 제공한다. LFW가 거의 포화상태에 달해 성능 향상이 뚜렷하지 않다.  
+
+- (1) Softmax, SphereFace, CosineFace 및 ArcFace에 비해 특히 큰 포즈 및 연령 변화 하에서 성능이 확실히 개선된다.
+- (2) CosineFace와 ArcFace는 훨씬 더 쉬운 구현으로 SphereFace를 능가한다. 코사인 페이스와 아크 페이스는 소프트맥스의 추가 감독 없이도 쉽게 융합할 수 있다. 이와는 대조적으로, Speace Face는 훈련 중 분산을 피하기 위해 Softmax의 추가 감독이 필수적이다. 
+- (3) ArcFace는 CosineFace보다 약간 낫다. 그러나 ArcFace는 그림 1과 같이 보다 직관적이며 하이퍼 스피어 매니폴드에 대한 기하학적 해석이 보다 명확하다.
